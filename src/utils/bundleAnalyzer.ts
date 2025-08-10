@@ -329,6 +329,9 @@ export class BundleAnalyzer {
   private generateInsights(): void {
     this.insights = [];
 
+    // Always generate basic insights
+    this.generateBasicInsights();
+
     // Large dependency warnings
     this.analyzeLargeDependencies();
 
@@ -343,6 +346,99 @@ export class BundleAnalyzer {
 
     // Performance insights
     this.analyzePerformance();
+  }
+
+  private generateBasicInsights(): void {
+    // Bundle size insights
+    const totalSize = this.modules.reduce((sum, m) => sum + m.size, 0);
+    const totalGzipSize = this.modules.reduce(
+      (sum, m) => sum + (m.gzipSize || m.size * 0.3),
+      0
+    );
+    const compressionRatio = ((totalSize - totalGzipSize) / totalSize) * 100;
+
+    // Bundle composition insight
+    const jsModules = this.modules.filter((m) => m.type === 'js');
+    const cssModules = this.modules.filter((m) => m.type === 'css');
+    const otherModules = this.modules.filter(
+      (m) => !['js', 'css'].includes(m.type)
+    );
+
+    if (jsModules.length > 0) {
+      const insight: OptimizationInsight = {
+        id: 'bundle-composition',
+        type: 'info',
+        title: 'Bundle Composition Analysis',
+        description: `Your bundle contains ${jsModules.length} JavaScript modules, ${cssModules.length} CSS modules, and ${otherModules.length} other assets.`,
+        impact: 'low',
+        recommendation:
+          'Consider code splitting JavaScript modules and optimizing CSS delivery for better performance.',
+        category: 'performance',
+      };
+      this.insights.push(insight);
+    }
+
+    // Compression insight
+    if (compressionRatio > 0) {
+      const insight: OptimizationInsight = {
+        id: 'compression-efficiency',
+        type: 'success',
+        title: 'Good Compression Ratio',
+        description: `Your bundle compresses well with gzip, achieving ${compressionRatio.toFixed(
+          1
+        )}% size reduction.`,
+        impact: 'low',
+        recommendation:
+          'Ensure your server is configured to serve gzipped content for optimal performance.',
+        category: 'performance',
+      };
+      this.insights.push(insight);
+    }
+
+    // Module count insight
+    if (this.modules.length > 10) {
+      const insight: OptimizationInsight = {
+        id: 'module-count',
+        type: 'info',
+        title: 'Modular Bundle Structure',
+        description: `Your bundle is well-modularized with ${this.modules.length} individual modules.`,
+        impact: 'low',
+        recommendation:
+          'This modular structure enables better caching and code splitting opportunities.',
+        category: 'code-splitting',
+      };
+      this.insights.push(insight);
+    } else if (this.modules.length <= 5) {
+      const insight: OptimizationInsight = {
+        id: 'module-count-low',
+        type: 'warning',
+        title: 'Limited Module Separation',
+        description: `Your bundle has only ${this.modules.length} modules, which may limit caching benefits.`,
+        impact: 'medium',
+        recommendation:
+          'Consider breaking down large modules into smaller, more focused pieces for better caching and maintainability.',
+        category: 'code-splitting',
+      };
+      this.insights.push(insight);
+    }
+
+    // File type diversity insight
+    const fileTypes = new Set(this.modules.map((m) => m.type));
+    if (fileTypes.size > 2) {
+      const insight: OptimizationInsight = {
+        id: 'file-type-diversity',
+        type: 'info',
+        title: 'Diverse Asset Types',
+        description: `Your bundle includes ${
+          fileTypes.size
+        } different file types: ${Array.from(fileTypes).join(', ')}.`,
+        impact: 'low',
+        recommendation:
+          'Ensure each asset type is optimized appropriately (minification for JS/CSS, compression for images, etc.).',
+        category: 'performance',
+      };
+      this.insights.push(insight);
+    }
   }
 
   private analyzeLargeDependencies(): void {

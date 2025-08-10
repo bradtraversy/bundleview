@@ -29,7 +29,7 @@ const App = () => {
 
   return (
     <div className='min-h-screen bg-dark-bg'>
-      <Header />
+      <Header onReset={resetAnalysis} />
 
       <main className='container mx-auto px-4 py-8'>
         {!bundleData ? (

@@ -1,9 +1,16 @@
-const Header = () => {
+interface HeaderProps {
+  onReset?: () => void;
+}
+
+const Header = ({ onReset }: HeaderProps) => {
   return (
     <header className='bg-dark-card border-b border-gray-800'>
       <div className='container mx-auto px-4 py-6'>
         <div className='flex items-center justify-between'>
-          <div className='flex items-center space-x-3'>
+          <div
+            className='flex items-center space-x-3 cursor-pointer hover:opacity-80 transition-opacity duration-200'
+            onClick={onReset}
+          >
             <div className='w-10 h-10 bg-accent rounded-lg flex items-center justify-center'>
               <svg
                 className='w-6 h-6 text-dark-bg'

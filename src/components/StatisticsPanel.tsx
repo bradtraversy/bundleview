@@ -1,4 +1,102 @@
 import { StatisticsPanelProps } from '../types';
+import { useState, useRef } from 'react';
+
+// Tooltip component for explaining metrics
+const MetricTooltip = ({
+  children,
+  tooltip,
+}: {
+  children: React.ReactNode;
+  tooltip: string;
+}) => {
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+  const [showTooltip, setShowTooltip] = useState(false);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const updateTooltipPosition = () => {
+    if (!containerRef.current || !tooltipRef.current) return;
+
+    const container = containerRef.current.getBoundingClientRect();
+    const tooltip = tooltipRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let left = '50%';
+    let transform = 'translateX(-50%)';
+    let top = 'auto';
+    let bottom = '100%';
+    let marginBottom = '0.5rem';
+    let marginTop = '0';
+
+    // Check if tooltip would go off the left edge
+    if (container.left < tooltip.width / 2) {
+      left = '0';
+      transform = 'translateX(0)';
+    }
+    // Check if tooltip would go off the right edge
+    else if (container.right + tooltip.width / 2 > viewportWidth) {
+      left = '100%';
+      transform = 'translateX(-100%)';
+    }
+
+    // Check if tooltip would go off the top edge
+    if (container.top < tooltip.height + 20) {
+      top = '100%';
+      bottom = 'auto';
+      marginBottom = '0';
+      marginTop = '0.5rem';
+    }
+
+    setTooltipStyle({
+      left,
+      top,
+      bottom,
+      marginBottom,
+      marginTop,
+      transform,
+    });
+  };
+
+  const handleMouseEnter = () => {
+    setShowTooltip(true);
+    // Use setTimeout to ensure the tooltip is rendered before calculating position
+    setTimeout(updateTooltipPosition, 0);
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className='relative inline-block'
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {children}
+      {showTooltip && (
+        <div
+          ref={tooltipRef}
+          className='absolute px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-xl z-50 max-w-xs whitespace-nowrap pointer-events-none'
+          style={tooltipStyle}
+        >
+          {tooltip}
+          <div
+            className='absolute w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900'
+            style={{
+              top: tooltipStyle.top === '100%' ? 'auto' : '100%',
+              bottom: tooltipStyle.bottom === '100%' ? 'auto' : '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+            }}
+          ></div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const StatisticsPanel = ({ bundleData }: StatisticsPanelProps) => {
   const formatSize = (bytes: number): string => {
@@ -60,9 +158,11 @@ const StatisticsPanel = ({ bundleData }: StatisticsPanelProps) => {
   return (
     <div className='space-y-6'>
       <div className='mb-6'>
-        <h3 className='text-lg font-semibold text-white mb-2'>
-          Bundle Statistics
-        </h3>
+        <MetricTooltip tooltip='Comprehensive analysis of your bundle size, composition, and performance metrics. Use these insights to identify optimization opportunities and understand your bundle structure.'>
+          <h3 className='text-lg font-semibold text-white mb-2 cursor-help'>
+            Bundle Statistics
+          </h3>
+        </MetricTooltip>
         <p className='text-gray-400 text-sm'>
           Detailed breakdown of your bundle composition and performance metrics.
         </p>
@@ -70,40 +170,50 @@ const StatisticsPanel = ({ bundleData }: StatisticsPanelProps) => {
 
       {/* Overall metrics */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4'>
-        <div className='card text-center'>
-          <div className='text-3xl font-bold text-accent mb-2'>
-            {formatSize(bundleData.totalSize)}
+        <MetricTooltip tooltip='The total uncompressed size of all your JavaScript, CSS, and other assets combined. This is what users download before any compression.'>
+          <div className='card text-center'>
+            <div className='text-3xl font-bold text-accent mb-2'>
+              {formatSize(bundleData.totalSize)}
+            </div>
+            <div className='text-gray-400 text-sm'>Total Bundle Size</div>
           </div>
-          <div className='text-gray-400 text-sm'>Total Bundle Size</div>
-        </div>
+        </MetricTooltip>
 
-        <div className='card text-center'>
-          <div className='text-3xl font-bold text-green-400 mb-2'>
-            {formatSize(bundleData.totalGzipSize)}
+        <MetricTooltip tooltip='The compressed size when using gzip compression. This is closer to what users actually download over the network, typically 20-70% smaller than uncompressed.'>
+          <div className='card text-center'>
+            <div className='text-3xl font-bold text-green-400 mb-2'>
+              {formatSize(bundleData.totalGzipSize)}
+            </div>
+            <div className='text-gray-400 text-sm'>Gzipped Size</div>
           </div>
-          <div className='text-gray-400 text-sm'>Gzipped Size</div>
-        </div>
+        </MetricTooltip>
 
-        <div className='card text-center'>
-          <div className='text-3xl font-bold text-blue-400 mb-2'>
-            {bundleData.modules.length}
+        <MetricTooltip tooltip='The total number of individual files or modules that make up your bundle. More modules can mean better code splitting but also more HTTP requests.'>
+          <div className='card text-center'>
+            <div className='text-3xl font-bold text-blue-400 mb-2'>
+              {bundleData.modules.length}
+            </div>
+            <div className='text-gray-400 text-sm'>Total Modules</div>
           </div>
-          <div className='text-gray-400 text-sm'>Total Modules</div>
-        </div>
+        </MetricTooltip>
 
-        <div className='card text-center'>
-          <div className='text-3xl font-bold text-purple-400 mb-2'>
-            {bundleData.chunks.length}
+        <MetricTooltip tooltip='Separate JavaScript bundles that can be loaded independently. Entry chunks contain the main application code, while other chunks can be loaded on-demand.'>
+          <div className='card text-center'>
+            <div className='text-3xl font-bold text-purple-400 mb-2'>
+              {bundleData.chunks.length}
+            </div>
+            <div className='text-gray-400 text-sm'>Chunks</div>
           </div>
-          <div className='text-gray-400 text-sm'>Chunks</div>
-        </div>
+        </MetricTooltip>
       </div>
 
       {/* File type breakdown */}
       <div className='card'>
-        <h4 className='text-lg font-semibold text-white mb-4'>
-          File Type Breakdown
-        </h4>
+        <MetricTooltip tooltip='Shows how your bundle size is distributed across different file types. JavaScript files typically make up the largest portion, followed by CSS and other assets.'>
+          <h4 className='text-lg font-semibold text-white mb-4 cursor-help'>
+            File Type Breakdown
+          </h4>
+        </MetricTooltip>
         <div className='space-y-3'>
           {getFileTypeBreakdown().map(({ type, count, size, percentage }) => (
             <div key={type} className='flex items-center justify-between'>
@@ -128,52 +238,66 @@ const StatisticsPanel = ({ bundleData }: StatisticsPanelProps) => {
           Performance Estimates
         </h4>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-          <div>
-            <div className='text-gray-400 text-sm mb-1'>
-              Estimated Load Time
+          <MetricTooltip tooltip='Estimated time to download and parse your bundle on different network speeds. 3G is ~1.5 Mbps, 4G is ~15+ Mbps. These are rough estimates for planning purposes.'>
+            <div>
+              <div className='text-gray-400 text-sm mb-1'>
+                Estimated Load Time
+              </div>
+              <div className='text-white font-medium'>
+                {estimateLoadTime(bundleData.totalSize)}
+              </div>
             </div>
-            <div className='text-white font-medium'>
-              {estimateLoadTime(bundleData.totalSize)}
-            </div>
-          </div>
+          </MetricTooltip>
 
-          <div>
-            <div className='text-gray-400 text-sm mb-1'>Compression Ratio</div>
-            <div className='text-white font-medium'>
-              {(
-                ((bundleData.totalSize - bundleData.totalGzipSize) /
-                  bundleData.totalSize) *
-                100
-              ).toFixed(1)}
-              %
+          <MetricTooltip tooltip='How much smaller your bundle becomes with gzip compression. Higher percentages mean better compression. Most text-based assets (JS, CSS, HTML) compress very well.'>
+            <div>
+              <div className='text-gray-400 text-sm mb-1'>
+                Compression Ratio
+              </div>
+              <div className='text-white font-medium'>
+                {(
+                  ((bundleData.totalSize - bundleData.totalGzipSize) /
+                    bundleData.totalSize) *
+                  100
+                ).toFixed(1)}
+                %
+              </div>
             </div>
-          </div>
+          </MetricTooltip>
 
-          <div>
-            <div className='text-gray-400 text-sm mb-1'>
-              Average Module Size
+          <MetricTooltip tooltip='The average size of individual modules in your bundle. Smaller modules can improve caching efficiency and enable better code splitting strategies.'>
+            <div>
+              <div className='text-gray-400 text-sm mb-1'>
+                Average Module Size
+              </div>
+              <div className='text-white font-medium'>
+                {formatSize(bundleData.totalSize / bundleData.modules.length)}
+              </div>
             </div>
-            <div className='text-white font-medium'>
-              {formatSize(bundleData.totalSize / bundleData.modules.length)}
-            </div>
-          </div>
+          </MetricTooltip>
 
-          <div>
-            <div className='text-gray-400 text-sm mb-1'>Largest Module</div>
-            <div className='text-white font-medium'>
-              {bundleData.modules.length > 0
-                ? formatSize(Math.max(...bundleData.modules.map((m) => m.size)))
-                : 'N/A'}
+          <MetricTooltip tooltip='The single largest module in your bundle. Large modules can slow down initial page load and may be candidates for code splitting or lazy loading.'>
+            <div>
+              <div className='text-gray-400 text-sm mb-1'>Largest Module</div>
+              <div className='text-white font-medium'>
+                {bundleData.modules.length > 0
+                  ? formatSize(
+                      Math.max(...bundleData.modules.map((m) => m.size))
+                    )
+                  : 'N/A'}
+              </div>
             </div>
-          </div>
+          </MetricTooltip>
         </div>
       </div>
 
       {/* Largest modules */}
       <div className='card'>
-        <h4 className='text-lg font-semibold text-white mb-4'>
-          Top 10 Largest Modules
-        </h4>
+        <MetricTooltip tooltip='The biggest modules in your bundle, ordered by size. These are prime candidates for optimization - consider code splitting, lazy loading, or finding smaller alternatives.'>
+          <h4 className='text-lg font-semibold text-white mb-4 cursor-help'>
+            Top 10 Largest Modules
+          </h4>
+        </MetricTooltip>
         <div className='space-y-2'>
           {getLargestModules().map((module, index) => (
             <div
@@ -207,9 +331,11 @@ const StatisticsPanel = ({ bundleData }: StatisticsPanelProps) => {
       {/* Chunk breakdown */}
       {bundleData.chunks.length > 0 && (
         <div className='card'>
-          <h4 className='text-lg font-semibold text-white mb-4'>
-            Chunk Breakdown
-          </h4>
+          <MetricTooltip tooltip='Chunks are separate JavaScript bundles that can be loaded independently. Entry chunks load first, while other chunks can be loaded on-demand to improve initial page load performance.'>
+            <h4 className='text-lg font-semibold text-white mb-4 cursor-help'>
+              Chunk Breakdown
+            </h4>
+          </MetricTooltip>
           <div className='space-y-3'>
             {getChunkBreakdown().map((chunk) => (
               <div

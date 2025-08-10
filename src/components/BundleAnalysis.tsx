@@ -3,12 +3,13 @@ import { BundleAnalysisProps, BundleModule, TabType } from '../types';
 import Treemap from './Treemap';
 import InsightsPanel from './InsightsPanel';
 import FileExplorer from './FileExplorer';
+import StatisticsPanel from './StatisticsPanel';
 
 const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
   const [selectedModule, setSelectedModule] = useState<BundleModule | null>(
     null
   );
-  const [activeTab, setActiveTab] = useState<TabType>('treemap');
+  const [activeTab, setActiveTab] = useState<TabType>('insights');
 
   const formatSize = (bytes: number): string => {
     if (bytes === 0) return '0 B';
@@ -45,32 +46,60 @@ const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
 
         {/* Summary stats */}
         <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-          <div className='bg-gray-800/50 rounded-lg p-4 text-center'>
+          <div className='bg-gray-800/50 rounded-lg p-4 text-center group relative'>
             <div className='text-2xl font-bold text-accent mb-1'>
               {formatSize(bundleData.totalSize)}
             </div>
             <div className='text-gray-400 text-sm'>Total Size</div>
+            {/* Tooltip */}
+            <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 max-w-xs group-hover:left-auto group-hover:right-auto group-hover:ml-0 group-hover:mr-0 group-hover:translate-x-0'>
+              The total uncompressed size of all your JavaScript, CSS, and other
+              assets combined. This is what users download before any
+              compression.
+              <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900'></div>
+            </div>
           </div>
 
-          <div className='bg-gray-800/50 rounded-lg p-4 text-center'>
+          <div className='bg-gray-800/50 rounded-lg p-4 text-center group relative'>
             <div className='text-2xl font-bold text-green-400 mb-1'>
               {formatSize(bundleData.totalGzipSize)}
             </div>
             <div className='text-gray-400 text-sm'>Gzipped Size</div>
+            {/* Tooltip */}
+            <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 max-w-xs group-hover:left-auto group-hover:right-auto group-hover:ml-0 group-hover:mr-0 group-hover:translate-x-0'>
+              The compressed size when using gzip compression. This is closer to
+              what users actually download over the network, typically 20-70%
+              smaller than uncompressed.
+              <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900'></div>
+            </div>
           </div>
 
-          <div className='bg-gray-800/50 rounded-lg p-4 text-center'>
+          <div className='bg-gray-800/50 rounded-lg p-4 text-center group relative'>
             <div className='text-2xl font-bold text-blue-400 mb-1'>
               {compressionRatio}%
             </div>
             <div className='text-gray-400 text-sm'>Compression</div>
+            {/* Tooltip */}
+            <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 max-w-xs group-hover:left-auto group-hover:right-auto group-hover:ml-0 group-hover:mr-0 group-hover:translate-x-0'>
+              How much smaller your bundle becomes with gzip compression. Higher
+              percentages mean better compression. Most text-based assets (JS,
+              CSS, HTML) compress very well.
+              <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900'></div>
+            </div>
           </div>
 
-          <div className='bg-gray-800/50 rounded-lg p-4 text-center'>
+          <div className='bg-gray-800/50 rounded-lg p-4 text-center group relative'>
             <div className='text-2xl font-bold text-purple-400 mb-1'>
               {bundleData.modules.length}
             </div>
             <div className='text-gray-400 text-sm'>Modules</div>
+            {/* Tooltip */}
+            <div className='absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 max-w-xs group-hover:left-auto group-hover:right-auto group-hover:ml-0 group-hover:mr-0 group-hover:translate-x-0'>
+              The total number of individual files or modules that make up your
+              bundle. More modules can mean better code splitting but also more
+              HTTP requests.
+              <div className='absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900'></div>
+            </div>
           </div>
         </div>
       </div>
@@ -80,8 +109,8 @@ const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
         <div className='border-b border-gray-700 mb-6'>
           <nav className='flex space-x-8'>
             {[
-              { id: 'treemap', label: 'Treemap View', icon: '📊' },
               { id: 'insights', label: 'Optimization Insights', icon: '💡' },
+              { id: 'treemap', label: 'Treemap View', icon: '📊' },
               { id: 'files', label: 'File Explorer', icon: '📁' },
             ].map((tab) => (
               <button
@@ -121,7 +150,10 @@ const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
           )}
 
           {activeTab === 'insights' && (
-            <InsightsPanel insights={bundleData.insights} />
+            <div className='space-y-6'>
+              <StatisticsPanel bundleData={bundleData} />
+              <InsightsPanel insights={bundleData.insights} />
+            </div>
           )}
 
           {activeTab === 'files' && (
