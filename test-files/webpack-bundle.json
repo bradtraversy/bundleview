@@ -1,0 +1,80 @@
+{
+  "modules": [
+    {
+      "id": "module-1",
+      "name": "src/components/App.tsx",
+      "size": 15420,
+      "gzipSize": 5200,
+      "dependencies": ["react", "react-dom"]
+    },
+    {
+      "id": "module-2",
+      "name": "src/components/Header.tsx",
+      "size": 8230,
+      "gzipSize": 2800,
+      "dependencies": ["react"]
+    },
+    {
+      "id": "module-3",
+      "name": "src/utils/helpers.ts",
+      "size": 4560,
+      "gzipSize": 1800,
+      "dependencies": []
+    },
+    {
+      "id": "module-4",
+      "name": "node_modules/react/index.js",
+      "size": 45600,
+      "gzipSize": 15200,
+      "dependencies": [],
+      "external": false
+    },
+    {
+      "id": "module-5",
+      "name": "node_modules/react-dom/index.js",
+      "size": 128000,
+      "gzipSize": 42000,
+      "dependencies": ["react"],
+      "external": false
+    },
+    {
+      "id": "module-6",
+      "name": "src/styles/index.css",
+      "size": 15600,
+      "gzipSize": 4800,
+      "dependencies": []
+    },
+    {
+      "id": "module-7",
+      "name": "src/components/Button.tsx",
+      "size": 3200,
+      "gzipSize": 1200,
+      "dependencies": ["react"]
+    },
+    {
+      "id": "module-8",
+      "name": "src/utils/api.ts",
+      "size": 8900,
+      "gzipSize": 3100,
+      "dependencies": ["axios"]
+    }
+  ],
+  "chunks": [
+    {
+      "id": "chunk-1",
+      "name": "main",
+      "size": 256000,
+      "gzipSize": 85000,
+      "modules": ["module-1", "module-2", "module-3", "module-4", "module-5"],
+      "entry": true
+    },
+    {
+      "id": "chunk-2",
+      "name": "vendor",
+      "size": 89000,
+      "gzipSize": 31000,
+      "modules": ["module-6", "module-7", "module-8"],
+      "entry": false
+    }
+  ]
+}

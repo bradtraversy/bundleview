@@ -1,0 +1,16 @@
+{
+  "version": 3,
+  "sources": [
+    "src/components/App.tsx",
+    "src/components/Header.tsx",
+    "src/utils/helpers.ts",
+    "node_modules/react/index.js"
+  ],
+  "names": [
+    "App",
+    "Header",
+    "helpers",
+    "React"
+  ],
+  "mappings": "AAAA,SAAS,CAAC;AACT,SAAS,CAAC;AACT,SAAS,CAAC;AACT,SAAS,CAAC"
+}
