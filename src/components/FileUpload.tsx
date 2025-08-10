@@ -90,8 +90,8 @@ const FileUpload = ({ onFileUpload, isAnalyzing }: FileUploadProps) => {
           Analyze Your Bundle
         </h2>
         <p className='text-gray-400 text-lg max-w-2xl mx-auto'>
-          Upload your webpack bundle analyzer JSON files, JavaScript source
-          maps, or bundle files to get detailed insights and optimization
+          Upload your JavaScript source maps, bundle files, or webpack bundle
+          analyzer JSON files to get detailed insights and optimization
           recommendations.
         </p>
       </div>
