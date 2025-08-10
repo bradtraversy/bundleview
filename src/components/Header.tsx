@@ -29,7 +29,7 @@ const Header = ({ onReset }: HeaderProps) => {
             <div>
               <h1 className='text-2xl font-bold text-white'>BundleView</h1>
               <p className='text-gray-400 text-sm'>
-                Optimize your JavaScript bundles
+                View and optimize your JS bundles
               </p>
             </div>
           </div>
