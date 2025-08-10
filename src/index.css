@@ -1,0 +1,64 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-dark-bg: #0f0f23;
+  --color-dark-card: #1a1a2e;
+  --color-accent: #00d9ff;
+  --color-accent-hover: #00b8d9;
+
+  --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+
+  --animation-fade-in: fadeIn 0.3s ease-in-out;
+  --animation-slide-up: slideUp 0.3s ease-out;
+  --animation-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@layer base {
+  html {
+    font-family: var(--font-family-sans);
+  }
+
+  body {
+    @apply bg-dark-bg text-white;
+    font-family: var(--font-family-sans);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-accent hover:bg-accent-hover text-dark-bg font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+
+  .btn-secondary {
+    @apply bg-dark-card hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg border border-gray-600 transition-colors duration-200;
+  }
+
+  .card {
+    @apply bg-dark-card rounded-xl p-6 border border-gray-800 shadow-xl;
+  }
+
+  .input-field {
+    @apply bg-dark-card border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:border-accent focus:outline-none transition-colors duration-200;
+  }
+}
