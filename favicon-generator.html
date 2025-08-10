@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BundleView Favicon Generator</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+          sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #0f0f23;
+        color: white;
+      }
+      .container {
+        background: #1a1a2e;
+        padding: 30px;
+        border-radius: 12px;
+        border: 1px solid #2d2d44;
+      }
+      .favicon-preview {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin: 20px 0;
+        padding: 20px;
+        background: #2d2d44;
+        border-radius: 8px;
+      }
+      .favicon-svg {
+        width: 64px;
+        height: 64px;
+      }
+      .instructions {
+        background: #2d2d44;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      code {
+        background: #1a1a2e;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Monaco', 'Menlo', monospace;
+      }
+      .download-btn {
+        background: #8b5cf6;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        text-decoration: none;
+        display: inline-block;
+        margin: 10px 0;
+      }
+      .download-btn:hover {
+        background: #7c3aed;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎯 BundleView Favicon</h1>
+      <p>
+        This page shows the new BundleView favicon and provides instructions for
+        generating ICO format if needed.
+      </p>
+
+      <div class="favicon-preview">
+        <div class="favicon-svg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 32 32"
+            fill="none"
+          >
+            <rect width="32" height="32" rx="6" fill="#8b5cf6" />
+            <path
+              d="M8 22V14a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v8m0 0a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2m0 0V10a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v12m-6 0a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2"
+              stroke="#0f0f23"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </div>
+        <div>
+          <h3>BundleView Favicon</h3>
+          <p>Purple background (#8b5cf6) with dark bar chart icon</p>
+          <p>Matches the header icon design</p>
+        </div>
+      </div>
+
+      <div class="instructions">
+        <h3>📁 File Locations</h3>
+        <ul>
+          <li><strong>SVG Favicon:</strong> <code>public/favicon.svg</code></li>
+          <li>
+            <strong>HTML Reference:</strong> <code>index.html</code> (already
+            updated)
+          </li>
+        </ul>
+
+        <h3>🔄 Generate ICO Format (Optional)</h3>
+        <p>If you need a traditional ICO favicon:</p>
+        <ol>
+          <li>Right-click the SVG favicon above</li>
+          <li>Save it as <code>favicon.svg</code></li>
+          <li>
+            Use an online converter like
+            <a
+              href="https://convertio.co/svg-ico/"
+              target="_blank"
+              style="color: #8b5cf6"
+              >ConvertIO</a
+            >
+            or
+            <a
+              href="https://favicon.io/favicon-converter/"
+              target="_blank"
+              style="color: #8b5cf6"
+              >Favicon.io</a
+            >
+          </li>
+          <li>Convert to ICO format</li>
+          <li>
+            Replace the SVG link in <code>index.html</code> with:
+            <code
+              >&lt;link rel="icon" type="image/x-icon" href="/favicon.ico"
+              /&gt;</code
+            >
+          </li>
+        </ol>
+      </div>
+
+      <h3>✅ What's Done</h3>
+      <ul>
+        <li>✅ Created <code>public/favicon.svg</code> matching header icon</li>
+        <li>✅ Updated <code>index.html</code> to reference new favicon</li>
+        <li>✅ Favicon uses same purple accent color (#8b5cf6)</li>
+        <li>✅ Favicon uses same bar chart design as header</li>
+      </ul>
+
+      <a href="/favicon.svg" download class="download-btn"
+        >Download SVG Favicon</a
+      >
+    </div>
+  </body>
+</html>
