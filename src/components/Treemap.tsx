@@ -4,7 +4,7 @@ import { TreemapProps, BundleModule, TreemapNode } from '../types';
 
 const Treemap = ({ data, onModuleClick }: TreemapProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
   // Color scale for different file types
   const colorScale = d3
@@ -14,61 +14,60 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
 
   // Process data for D3 hierarchy
   const processData = (modules: BundleModule[]) => {
-    if (modules.length === 0) return null;
+    if (!modules.length) return null;
 
-    // Group modules by path segments
-    const groupedData: any = {};
+    console.log('Processing modules:', modules);
 
-    modules.forEach((module) => {
-      const path = module.path.length > 0 ? module.path : [module.name];
-      let current = groupedData;
+    // Create a simple flat structure that D3 can handle
+    const flatData: TreemapNode[] = modules.map((module) => ({
+      name: module.name,
+      size: module.size,
+      module: module,
+      children: undefined,
+    }));
 
-      path.forEach((segment, index) => {
-        if (!current[segment]) {
-          current[segment] = {
-            name: segment,
-            children: {},
-            size: 0,
-            module: null,
-          };
-        }
+    console.log('Flat data structure:', flatData);
 
-        if (index === path.length - 1) {
-          // Leaf node
-          current[segment].size = module.size;
-          current[segment].module = module;
-        } else {
-          current = current[segment].children;
-        }
-      });
+    // Create hierarchy from flat data
+    const hierarchy = d3.hierarchy({
+      name: 'root',
+      size: 0,
+      module: null,
+      children: flatData,
     });
 
-    // Convert to D3 hierarchy format
-    const convertToHierarchy = (obj: any): TreemapNode => {
-      const children = Object.values(obj.children).map(convertToHierarchy);
-      return {
-        name: obj.name,
-        size: obj.size,
-        module: obj.module,
-        children: children.length > 0 ? children : undefined,
-      };
-    };
+    hierarchy.sum((d) => d.size || 0);
+    hierarchy.sort((a, b) => (b.value || 0) - (a.value || 0));
 
-    return d3
-      .hierarchy(convertToHierarchy(groupedData))
-      .sum((d) => d.size || 0)
-      .sort((a, b) => (b.value || 0) - (a.value || 0));
+    console.log('Final hierarchy:', hierarchy);
+    console.log('Root children:', hierarchy.children);
+
+    return hierarchy as any;
   };
 
   // Create treemap layout
   useEffect(() => {
     if (!svgRef.current || !data.length) return;
 
+    console.log('Treemap useEffect - data:', data);
+    console.log('Treemap useEffect - data.length:', data.length);
+    console.log('SVG dimensions:', dimensions);
+    console.log('SVG ref current:', svgRef.current);
+
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
 
     const hierarchy = processData(data);
-    if (!hierarchy) return;
+    console.log('Processed hierarchy:', hierarchy);
+
+    if (!hierarchy) {
+      console.log('No hierarchy created, returning early');
+      return;
+    }
+
+    // Check if hierarchy has proper values
+    console.log('Hierarchy value:', hierarchy.value);
+    console.log('Hierarchy data:', hierarchy.data);
 
     const treemap = d3
       .treemap<TreemapNode>()
@@ -77,6 +76,25 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
       .round(true);
 
     const root = treemap(hierarchy);
+    console.log('D3 root:', root);
+    console.log('Root leaves:', root.leaves());
+    console.log('Root leaves length:', root.leaves().length);
+
+    // Check each leaf's properties
+    root.leaves().forEach((leaf, i) => {
+      console.log(`Leaf ${i}:`, {
+        x0: leaf.x0,
+        y0: leaf.y0,
+        x1: leaf.x1,
+        y1: leaf.y1,
+        value: leaf.value,
+        data: leaf.data,
+        dataKeys: leaf.data ? Object.keys(leaf.data) : 'no data',
+        dataModule: leaf.data?.module,
+        dataName: leaf.data?.name,
+        dataSize: leaf.data?.size,
+      });
+    });
 
     // Create tooltip
     const tooltip = d3
@@ -94,6 +112,9 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
       .data(root.leaves())
       .join('g')
       .attr('transform', (d) => `translate(${d.x0},${d.y0})`);
+
+    console.log('Created nodes:', nodes);
+    console.log('Nodes size:', nodes.size());
 
     nodes
       .append('rect')
@@ -129,10 +150,11 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
       .on('mouseout', () => {
         tooltip.transition().duration(500).style('opacity', 0);
       })
-      .on('click', (d) => {
-        const module = d.data.module;
-        if (module) {
-          onModuleClick(module);
+      .on('click', (event, d) => {
+        console.log('Click event data:', d);
+        console.log('Click event d.data:', d.data);
+        if (d.data && d.data.module) {
+          onModuleClick(d.data.module);
         }
       });
 
@@ -146,8 +168,22 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
       .attr('font-size', '12px')
       .attr('font-weight', '500')
       .text((d) => {
-        const module = d.data.module;
-        return module ? truncateText(module.name, 20) : '';
+        console.log('Text rendering d:', d);
+        console.log('Text rendering d.data:', d.data);
+        console.log(
+          'Text rendering d.data keys:',
+          d.data ? Object.keys(d.data) : 'no data'
+        );
+        console.log('Text rendering d.data.module:', d.data?.module);
+        console.log('Text rendering d.data.name:', d.data?.name);
+
+        if (d.data && d.data.module) {
+          return truncateText(d.data.module.name, 20);
+        }
+        if (d.data && d.data.name) {
+          return truncateText(d.data.name, 20);
+        }
+        return 'Unknown';
       });
 
     // Cleanup tooltip on unmount
@@ -163,13 +199,14 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
         const container = svgRef.current.parentElement;
         if (container) {
           setDimensions({
-            width: container.clientWidth,
+            width: container.clientWidth || 800,
             height: 600,
           });
         }
       }
     };
 
+    // Run immediately and then on resize
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);

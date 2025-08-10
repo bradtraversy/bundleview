@@ -3,6 +3,7 @@ import Header from './components/Header';
 import FileUpload from './components/FileUpload';
 import BundleAnalysis from './components/BundleAnalysis';
 import { BundleData } from './types';
+import { bundleAnalyzer } from './utils/bundleAnalyzer';
 
 const App = () => {
   const [bundleData, setBundleData] = useState<BundleData | null>(null);
@@ -11,8 +12,8 @@ const App = () => {
   const handleFileUpload = async (files: File[]) => {
     setIsAnalyzing(true);
     try {
-      // Process files and generate bundle data
-      const data = await processBundleFiles(files);
+      // Process files using the real bundle analyzer
+      const data = await bundleAnalyzer.analyzeFiles(files);
       setBundleData(data);
     } catch (error) {
       console.error('Error processing bundle files:', error);
@@ -42,26 +43,6 @@ const App = () => {
       </main>
     </div>
   );
-};
-
-// Placeholder function - will be implemented in the analysis engine
-const processBundleFiles = async (files: File[]): Promise<BundleData> => {
-  // Simulate processing delay
-  await new Promise((resolve) => setTimeout(resolve, 2000));
-
-  // Return mock data for now
-  return {
-    totalSize: 1024 * 1024 * 2.5, // 2.5MB
-    totalGzipSize: 1024 * 1024 * 0.8, // 800KB
-    modules: [],
-    chunks: [],
-    insights: [],
-    metadata: {
-      analyzedAt: new Date().toISOString(),
-      fileCount: files.length,
-      fileTypes: files.map((f) => f.name.split('.').pop() || 'unknown'),
-    },
-  };
 };
 
 export default App;

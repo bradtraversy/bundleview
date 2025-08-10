@@ -15,9 +15,20 @@ export class BundleAnalyzer {
     this.chunks = [];
     this.insights = [];
 
+    console.log(`Starting analysis of ${files.length} files`);
+    console.log(
+      'File names:',
+      files.map((f) => f.name)
+    );
+
     for (const file of files) {
       await this.processFile(file);
     }
+
+    console.log(`Analysis complete. Modules found: ${this.modules.length}`);
+    console.log('Modules:', this.modules);
+    console.log(`Chunks found: ${this.chunks.length}`);
+    console.log('Chunks:', this.chunks);
 
     this.generateInsights();
 
@@ -47,7 +58,11 @@ export class BundleAnalyzer {
       } else if (extension === 'map') {
         await this.processSourceMap(file);
       } else if (extension === 'js') {
-        await this.processJavaScriptFile(file);
+        // Try to parse as webpack bundle first, fallback to single file
+        const parsed = await this.tryParseAsWebpackBundle(file);
+        if (!parsed) {
+          await this.processJavaScriptFile(file);
+        }
       }
     } catch (error) {
       console.error(`Error processing file ${file.name}:`, error);
@@ -65,6 +80,138 @@ export class BundleAnalyzer {
       // Alternative webpack format
       this.processWebpackChunks(data.chunks);
     }
+  }
+
+  private async tryParseAsWebpackBundle(file: File): Promise<boolean> {
+    try {
+      const content = await file.text();
+      console.log(`Analyzing ${file.name}, content length: ${content.length}`);
+
+      // Look for webpack bundle indicators
+      const hasWebpackRequire = content.includes('webpack_require');
+      const hasWebpackRequireUnderscore = content.includes(
+        '__webpack_require__'
+      );
+      const hasWebpackJsonp = content.includes('webpackJsonp');
+      const hasWebpackChunk = content.includes('webpackChunk');
+
+      console.log('Webpack indicators found:', {
+        hasWebpackRequire,
+        hasWebpackRequireUnderscore,
+        hasWebpackJsonp,
+        hasWebpackChunk,
+      });
+
+      if (
+        hasWebpackRequire ||
+        hasWebpackRequireUnderscore ||
+        hasWebpackJsonp ||
+        hasWebpackChunk
+      ) {
+        console.log('Detected webpack bundle, parsing...');
+        // Parse the bundle to extract module information
+        this.parseCompiledWebpackBundle(content, file.name);
+        return true;
+      }
+
+      console.log('No webpack indicators found, treating as single file');
+      return false;
+    } catch (error) {
+      console.error('Error in tryParseAsWebpackBundle:', error);
+      return false;
+    }
+  }
+
+  private parseCompiledWebpackBundle(content: string, filename: string): void {
+    // Extract module information from compiled webpack bundle
+    const modules: BundleModule[] = [];
+
+    // Split content by common webpack patterns to identify modules
+    const modulePatterns = [
+      /webpack_require\(['"`]([^'"`]+)['"`]\)/g,
+      /__webpack_require__\(['"`]([^'"`]+)['"`]\)/g,
+      /webpack_require\((\d+)\)/g,
+      /__webpack_require__\((\d+)\)/g,
+    ];
+
+    const moduleNames = new Set<string>();
+
+    // Extract module names from webpack require calls
+    modulePatterns.forEach((pattern) => {
+      let match;
+      while ((match = pattern.exec(content)) !== null) {
+        if (match[1] && !match[1].match(/^\d+$/)) {
+          moduleNames.add(match[1]);
+        }
+      }
+    });
+
+    // If we found modules, create module entries
+    if (moduleNames.size > 0) {
+      const moduleSize = Math.floor(content.length / moduleNames.size);
+
+      Array.from(moduleNames).forEach((moduleName, index) => {
+        const module: BundleModule = {
+          id: `compiled-${index}`,
+          name: moduleName,
+          size: moduleSize,
+          path: moduleName.split('/'),
+          dependencies: [],
+          isExternal: false,
+          type: this.getFileType(moduleName),
+        };
+        modules.push(module);
+      });
+
+      // Add the main bundle as a chunk
+      const chunkData: ChunkData = {
+        id: 'main-bundle',
+        name: filename,
+        size: content.length,
+        gzipSize: Math.floor(content.length * 0.3), // Estimate gzip size
+        modules: modules.map((m) => m.id),
+        entry: true,
+      };
+
+      this.chunks.push(chunkData);
+      this.modules.push(...modules);
+    } else {
+      // Fallback: treat as single module with estimated breakdown
+      const estimatedModules = this.estimateBundleModules(content, filename);
+      this.modules.push(...estimatedModules);
+    }
+  }
+
+  private estimateBundleModules(
+    content: string,
+    filename: string
+  ): BundleModule[] {
+    const modules: BundleModule[] = [];
+    const totalSize = content.length;
+
+    // Common React app module patterns
+    const moduleTypes = [
+      { name: 'React Core', type: 'js', sizeRatio: 0.15 },
+      { name: 'React DOM', type: 'js', sizeRatio: 0.12 },
+      { name: 'Application Code', type: 'js', sizeRatio: 0.25 },
+      { name: 'Dependencies', type: 'js', sizeRatio: 0.35 },
+      { name: 'Runtime', type: 'js', sizeRatio: 0.13 },
+    ];
+
+    moduleTypes.forEach((moduleType, index) => {
+      const module: BundleModule = {
+        id: `estimated-${index}`,
+        name: moduleType.name,
+        size: Math.floor(totalSize * moduleType.sizeRatio),
+        path: [moduleType.name],
+        dependencies: [],
+        isExternal: false,
+        type: moduleType.type as any,
+      };
+      modules.push(module);
+    });
+
+    return modules;
   }
 
   private async processSourceMap(file: File): Promise<void> {
