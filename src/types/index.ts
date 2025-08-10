@@ -10,6 +10,13 @@ export interface BundleModule {
   chunk?: string;
 }
 
+export interface TreemapNode {
+  name: string;
+  size: number;
+  module: BundleModule | null;
+  children?: TreemapNode[];
+}
+
 export interface ChunkData {
   id: string;
   name: string;
@@ -75,3 +82,5 @@ export interface FileExplorerProps {
   modules: BundleModule[];
   onModuleSelect: (module: BundleModule) => void;
 }
+
+export type TabType = 'treemap' | 'insights' | 'files';

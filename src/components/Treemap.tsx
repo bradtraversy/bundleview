@@ -1,13 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { TreemapProps, BundleModule } from '../types';
-
-interface TreemapNode {
-  name: string;
-  size: number;
-  module: BundleModule | null;
-  children?: TreemapNode[];
-}
+import { TreemapProps, BundleModule, TreemapNode } from '../types';
 
 const Treemap = ({ data, onModuleClick }: TreemapProps) => {
   const svgRef = useRef<SVGSVGElement>(null);

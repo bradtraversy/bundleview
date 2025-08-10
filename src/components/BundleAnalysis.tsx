@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BundleAnalysisProps, BundleModule } from '../types';
+import { BundleAnalysisProps, BundleModule, TabType } from '../types';
 import Treemap from './Treemap';
 import InsightsPanel from './InsightsPanel';
 import FileExplorer from './FileExplorer';
@@ -8,9 +8,7 @@ const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
   const [selectedModule, setSelectedModule] = useState<BundleModule | null>(
     null
   );
-  const [activeTab, setActiveTab] = useState<'treemap' | 'insights' | 'files'>(
-    'treemap'
-  );
+  const [activeTab, setActiveTab] = useState<TabType>('treemap');
 
   const formatSize = (bytes: number): string => {
     if (bytes === 0) return '0 B';
