@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { FileExplorerProps, BundleModule } from '../types';
+import { FileExplorerProps } from '../types';
 
 const FileExplorer = ({ modules, onModuleSelect }: FileExplorerProps) => {
   const [searchTerm, setSearchTerm] = useState('');

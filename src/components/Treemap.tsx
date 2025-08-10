@@ -2,14 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { TreemapProps, BundleModule } from '../types';
 
+interface TreemapNode {
+  name: string;
+  size: number;
+  module: BundleModule | null;
+  children?: TreemapNode[];
+}
+
 const Treemap = ({ data, onModuleClick }: TreemapProps) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 600 });
-  const [hoveredModule, setHoveredModule] = useState<BundleModule | null>(null);
 
   // Color scale for different file types
   const colorScale = d3
-    .scaleOrdinal()
+    .scaleOrdinal<string>()
     .domain(['js', 'css', 'json', 'map', 'other'])
     .range(['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']);
 
@@ -45,7 +51,7 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
     });
 
     // Convert to D3 hierarchy format
-    const convertToHierarchy = (obj: any): any => {
+    const convertToHierarchy = (obj: any): TreemapNode => {
       const children = Object.values(obj.children).map(convertToHierarchy);
       return {
         name: obj.name,
@@ -72,7 +78,7 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
     if (!hierarchy) return;
 
     const treemap = d3
-      .treemap()
+      .treemap<TreemapNode>()
       .size([dimensions.width, dimensions.height])
       .padding(1)
       .round(true);
@@ -101,17 +107,15 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
       .attr('width', (d) => d.x1 - d.x0)
       .attr('height', (d) => d.y1 - d.y0)
       .attr('fill', (d) => {
-        const module = d.data.module as BundleModule;
+        const module = d.data.module;
         return module ? colorScale(module.type) : '#6b7280';
       })
       .attr('stroke', '#1f2937')
       .attr('stroke-width', 1)
       .style('cursor', 'pointer')
       .on('mouseover', (event, d) => {
-        const module = d.data.module as BundleModule;
+        const module = d.data.module;
         if (module) {
-          setHoveredModule(module);
-
           tooltip.transition().duration(200).style('opacity', 0.9);
 
           tooltip
@@ -130,11 +134,10 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
         }
       })
       .on('mouseout', () => {
-        setHoveredModule(null);
         tooltip.transition().duration(500).style('opacity', 0);
       })
-      .on('click', (event, d) => {
-        const module = d.data.module as BundleModule;
+      .on('click', (d) => {
+        const module = d.data.module;
         if (module) {
           onModuleClick(module);
         }
@@ -150,7 +153,7 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
       .attr('font-size', '12px')
       .attr('font-weight', '500')
       .text((d) => {
-        const module = d.data.module as BundleModule;
+        const module = d.data.module;
         return module ? truncateText(module.name, 20) : '';
       });
 
@@ -221,7 +224,7 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
           <div key={type} className='flex items-center space-x-2'>
             <div
               className='w-4 h-4 rounded'
-              style={{ backgroundColor: colorScale(type) }}
+              style={{ backgroundColor: colorScale(type) || '#6b7280' }}
             />
             <span className='text-gray-400 text-sm capitalize'>{type}</span>
           </div>
