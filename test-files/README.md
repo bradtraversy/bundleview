@@ -1,4 +1,4 @@
-# Test Files for Bundle Size Analyzer
+# Test Files for BundleView
 
 ## How to Test
 
