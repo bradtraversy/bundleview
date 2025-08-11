@@ -12,6 +12,11 @@
 
 BundleView is a powerful, modern web application that helps developers analyze and optimize their JavaScript bundles. Whether you're working with webpack, Vite, or any other bundler, BundleView provides detailed insights into your bundle composition, identifies optimization opportunities, and offers actionable recommendations to improve performance.
 
+<p align="center">
+  <img src="./public/screen.png" width="500" alt="BundleView screenshot" />
+  
+</p>
+
 ## ✨ Features
 
 ### 🔍 **Bundle Analysis**
