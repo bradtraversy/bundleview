@@ -2,7 +2,7 @@
 
 **View and optimize your JavaScript bundles with detailed insights and optimization recommendations**
 
-[![BundleView Demo](https://img.shields.io/badge/BundleView-Demo-blue?style=for-the-badge&logo=javascript)](https://github.com/bradtraversy/bundleview)
+[![BundleView Demo](https://bundleview.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19+-blue?style=for-the-badge&logo=react)](https://react.dev/)
