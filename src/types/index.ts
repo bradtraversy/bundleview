@@ -8,6 +8,7 @@ export interface BundleModule {
   isExternal: boolean;
   type: 'js' | 'css' | 'json' | 'map' | 'other';
   chunk?: string;
+  javascriptAnalysis?: JavaScriptAnalysis; // Add JavaScript analysis data
 }
 
 export interface TreemapNode {
@@ -83,7 +84,12 @@ export interface FileExplorerProps {
   onModuleSelect: (module: BundleModule) => void;
 }
 
-export type TabType = 'insights' | 'performance' | 'treemap' | 'files';
+export type TabType =
+  | 'insights'
+  | 'performance'
+  | 'javascript'
+  | 'treemap'
+  | 'files';
 
 export interface PerformanceMetrics {
   firstContentfulPaint: number;
@@ -120,4 +126,74 @@ export interface PerformanceData {
   criticalPath: CriticalPath;
   performanceScore: number;
   recommendations: string[];
+}
+
+// JavaScript File Analysis Types
+export interface JavaScriptAnalysis {
+  fileType: 'vanilla' | 'bundle' | 'module' | 'unknown';
+  confidence: number;
+  functions: FunctionInfo[];
+  classes: ClassInfo[];
+  imports: ImportInfo[];
+  exports: ExportInfo[];
+  dependencies: string[];
+  libraries: LibraryUsage[];
+  codeMetrics: CodeMetrics;
+  optimizationOpportunities: string[];
+  insights: OptimizationInsight[];
+}
+
+export interface FunctionInfo {
+  name: string;
+  type: 'function' | 'arrow' | 'method' | 'async';
+  lineStart: number;
+  lineEnd: number;
+  size: number;
+  complexity: number;
+  parameters: string[];
+}
+
+export interface ClassInfo {
+  name: string;
+  lineStart: number;
+  lineEnd: number;
+  size: number;
+  methods: string[];
+  properties: string[];
+  extends?: string;
+  implements?: string[];
+}
+
+export interface ImportInfo {
+  source: string;
+  type: 'es6' | 'commonjs' | 'dynamic';
+  items: string[];
+  line: number;
+}
+
+export interface ExportInfo {
+  type: 'named' | 'default' | 'all';
+  items: string[];
+  line: number;
+}
+
+export interface LibraryUsage {
+  name: string;
+  confidence: number;
+  patterns: string[];
+  usageCount: number;
+}
+
+export interface CodeMetrics {
+  totalLines: number;
+  codeLines: number;
+  commentLines: number;
+  emptyLines: number;
+  functionCount: number;
+  classCount: number;
+  importCount: number;
+  exportCount: number;
+  averageFunctionSize: number;
+  averageClassSize: number;
+  cyclomaticComplexity: number;
 }

@@ -4,6 +4,7 @@ import {
   ChunkData,
   OptimizationInsight,
 } from '../types';
+import { JavaScriptAnalyzer } from './javascriptAnalyzer';
 
 export class BundleAnalyzer {
   private modules: BundleModule[] = [];
@@ -233,14 +234,22 @@ export class BundleAnalyzer {
   }
 
   private async processJavaScriptFile(file: File): Promise<void> {
+    // Read the file content for JavaScript analysis
+    const content = await file.text();
+
+    // Analyze the JavaScript content
+    const jsAnalyzer = new JavaScriptAnalyzer();
+    const jsAnalysis = jsAnalyzer.analyzeFile(content);
+
     const module: BundleModule = {
       id: `js-${file.name}`,
       name: file.name,
       size: file.size,
       path: [file.name],
-      dependencies: [],
+      dependencies: jsAnalysis.dependencies, // Use actual dependencies from analysis
       isExternal: false,
       type: 'js',
+      javascriptAnalysis: jsAnalysis, // Store the full analysis
     };
     this.modules.push(module);
   }

@@ -4,6 +4,7 @@ import {
   BundleModule,
   TabType,
   PerformanceData,
+  JavaScriptAnalysis,
 } from '../types';
 import Treemap from './Treemap';
 import InsightsPanel from './InsightsPanel';
@@ -12,6 +13,8 @@ import StatisticsPanel from './StatisticsPanel';
 import PerformancePanel from './PerformancePanel';
 import { PerformanceAnalyzer } from '../utils/performanceAnalyzer';
 
+import JavaScriptAnalysisPanel from './JavaScriptAnalysisPanel';
+
 const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
   const [selectedModule, setSelectedModule] = useState<BundleModule | null>(
     null
@@ -19,13 +22,74 @@ const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
   const [activeTab, setActiveTab] = useState<TabType>('insights');
   const [performanceData, setPerformanceData] =
     useState<PerformanceData | null>(null);
+  const [javascriptAnalysis, setJavascriptAnalysis] =
+    useState<JavaScriptAnalysis | null>(null);
+  const [showJavaScriptTab, setShowJavaScriptTab] = useState(false);
 
-  // Analyze performance when bundle data changes
+  // Redirect to insights if JavaScript tab becomes unavailable
+  useEffect(() => {
+    if (activeTab === 'javascript' && !showJavaScriptTab) {
+      setActiveTab('insights');
+    }
+  }, [showJavaScriptTab, activeTab]);
+
+  // Analyze performance and JavaScript when bundle data changes
   useEffect(() => {
     if (bundleData) {
-      const analyzer = new PerformanceAnalyzer(bundleData);
-      const analysis = analyzer.analyze();
-      setPerformanceData(analysis);
+      // Performance analysis
+      const performanceAnalyzer = new PerformanceAnalyzer(bundleData);
+      const performanceAnalysis = performanceAnalyzer.analyze();
+      setPerformanceData(performanceAnalysis);
+
+      // JavaScript analysis for the first JS file
+      const jsModules = bundleData.modules.filter((m) => m.type === 'js');
+      if (jsModules.length > 0) {
+        // Use the stored JavaScript analysis if available
+        const firstJsModule = jsModules[0];
+        if (firstJsModule.javascriptAnalysis) {
+          setJavascriptAnalysis(firstJsModule.javascriptAnalysis);
+          // Show JavaScript tab if we have detailed analysis (not just a simple vanilla JS file)
+          const hasComplexStructure =
+            firstJsModule.javascriptAnalysis.functions.length > 0 ||
+            firstJsModule.javascriptAnalysis.classes.length > 0 ||
+            firstJsModule.javascriptAnalysis.imports.length > 0 ||
+            firstJsModule.javascriptAnalysis.exports.length > 0 ||
+            firstJsModule.javascriptAnalysis.libraries.length > 0;
+          setShowJavaScriptTab(hasComplexStructure);
+        } else {
+          // Fallback for modules without analysis (e.g., from webpack bundles)
+          const basicAnalysis = {
+            fileType: 'vanilla' as const,
+            confidence: 50,
+            functions: [],
+            classes: [],
+            imports: [],
+            exports: [],
+            dependencies: firstJsModule.dependencies || [],
+            libraries: [],
+            codeMetrics: {
+              totalLines: Math.ceil(firstJsModule.size / 50),
+              codeLines: Math.ceil(firstJsModule.size / 50),
+              commentLines: 0,
+              emptyLines: 0,
+              functionCount: 0,
+              classCount: 0,
+              importCount: 0,
+              exportCount: 0,
+              averageFunctionSize: 0,
+              averageClassSize: 0,
+              cyclomaticComplexity: 1,
+            },
+            optimizationOpportunities: [
+              'Basic analysis available. For detailed JavaScript analysis, upload individual JS files.',
+            ],
+            insights: [],
+          };
+          setJavascriptAnalysis(basicAnalysis);
+          // Don't show JavaScript tab for basic analysis
+          setShowJavaScriptTab(false);
+        }
+      }
     }
   }, [bundleData]);
 
@@ -129,6 +193,15 @@ const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
             {[
               { id: 'insights', label: 'Optimization Insights', icon: '💡' },
               { id: 'performance', label: 'Performance', icon: '⚡' },
+              ...(showJavaScriptTab
+                ? [
+                    {
+                      id: 'javascript',
+                      label: 'JavaScript Analysis',
+                      icon: '🔍',
+                    },
+                  ]
+                : []),
               { id: 'treemap', label: 'Treemap View', icon: '📊' },
               { id: 'files', label: 'File Explorer', icon: '📁' },
             ].map((tab) => (
@@ -190,6 +263,21 @@ const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
                 performanceData={performanceData}
                 bundleSize={bundleData.totalSize}
               />
+            </div>
+          )}
+
+          {activeTab === 'javascript' && javascriptAnalysis && (
+            <div>
+              <div className='mb-4'>
+                <h3 className='text-lg font-semibold text-white mb-2'>
+                  JavaScript Analysis
+                </h3>
+                <p className='text-gray-400 text-sm'>
+                  Detailed analysis of JavaScript code structure, functions,
+                  classes, and optimization opportunities.
+                </p>
+              </div>
+              <JavaScriptAnalysisPanel analysis={javascriptAnalysis} />
             </div>
           )}
 
