@@ -177,15 +177,12 @@ export class BundleAnalyzer {
       this.modules.push(...modules);
     } else {
       // Fallback: treat as single module with estimated breakdown
-      const estimatedModules = this.estimateBundleModules(content, filename);
+      const estimatedModules = this.estimateBundleModules(content);
       this.modules.push(...estimatedModules);
     }
   }
 
-  private estimateBundleModules(
-    content: string,
-    filename: string
-  ): BundleModule[] {
+  private estimateBundleModules(content: string): BundleModule[] {
     const modules: BundleModule[] = [];
     const totalSize = content.length;
 
@@ -422,6 +419,9 @@ export class BundleAnalyzer {
       this.insights.push(insight);
     }
 
+    // Performance insights
+    this.generatePerformanceInsights(totalSize, totalGzipSize);
+
     // File type diversity insight
     const fileTypes = new Set(this.modules.map((m) => m.type));
     if (fileTypes.size > 2) {
@@ -525,13 +525,52 @@ export class BundleAnalyzer {
     }
   }
 
-  private analyzePerformance(): void {
-    const totalSize = this.modules.reduce((sum, m) => sum + m.size, 0);
+  private generatePerformanceInsights(
+    totalSize: number,
+    totalGzipSize: number
+  ): void {
+    // Load time estimates for different network conditions
+    const fast3GTime = (totalSize * 8) / (1.6 * 1024 * 1024); // 1.6 Mbps
 
-    if (totalSize > 1024 * 1024) {
-      // > 1MB
+    if (fast3GTime > 3) {
+      // > 3 seconds on fast 3G
       const insight: OptimizationInsight = {
-        id: 'performance',
+        id: 'slow-3g-load',
+        type: 'warning',
+        title: 'Slow Loading on Mobile Networks',
+        description: `Your bundle takes ${fast3GTime.toFixed(
+          1
+        )}s to load on fast 3G networks, which may impact mobile user experience.`,
+        impact: 'high',
+        recommendation:
+          'Implement aggressive code splitting and lazy loading to improve mobile performance.',
+        category: 'performance',
+      };
+      this.insights.push(insight);
+    }
+
+    // Compression efficiency insights
+    const compressionRatio = ((totalSize - totalGzipSize) / totalSize) * 100;
+    if (compressionRatio < 30) {
+      const insight: OptimizationInsight = {
+        id: 'poor-compression',
+        type: 'warning',
+        title: 'Poor Compression Efficiency',
+        description: `Your bundle only compresses by ${compressionRatio.toFixed(
+          1
+        )}%, which is below the typical 30-70% range.`,
+        impact: 'medium',
+        recommendation:
+          'Review your code for opportunities to improve compression (remove comments, minify, use shorter variable names).',
+        category: 'performance',
+      };
+      this.insights.push(insight);
+    }
+
+    // Bundle size performance insights
+    if (totalSize > 1024 * 1024) {
+      const insight: OptimizationInsight = {
+        id: 'large-bundle-performance',
         type: 'warning',
         title: 'Large Bundle Size',
         description: `Your total bundle size is ${this.formatSize(
@@ -543,7 +582,40 @@ export class BundleAnalyzer {
         category: 'performance',
       };
       this.insights.push(insight);
+    } else if (totalSize > 500 * 1024) {
+      const insight: OptimizationInsight = {
+        id: 'medium-bundle-performance',
+        type: 'info',
+        title: 'Moderate Bundle Size',
+        description: `Your bundle size is ${this.formatSize(
+          totalSize
+        )}, which is acceptable but could be optimized further.`,
+        impact: 'medium',
+        recommendation:
+          'Implement code splitting for non-critical features to improve initial load time.',
+        category: 'performance',
+      };
+      this.insights.push(insight);
+    } else {
+      const insight: OptimizationInsight = {
+        id: 'good-bundle-size',
+        type: 'success',
+        title: 'Good Bundle Size',
+        description: `Your bundle size is ${this.formatSize(
+          totalSize
+        )}, which is excellent for performance.`,
+        impact: 'low',
+        recommendation:
+          'Maintain this size and focus on other optimization areas like caching and delivery.',
+        category: 'performance',
+      };
+      this.insights.push(insight);
     }
+  }
+
+  private analyzePerformance(): void {
+    // This method is now replaced by generatePerformanceInsights
+    // Keeping for backward compatibility but it's no longer used
   }
 
   private getLargeDependencyRecommendation(module: BundleModule): string {

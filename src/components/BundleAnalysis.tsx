@@ -1,15 +1,33 @@
-import { useState } from 'react';
-import { BundleAnalysisProps, BundleModule, TabType } from '../types';
+import { useState, useEffect } from 'react';
+import {
+  BundleAnalysisProps,
+  BundleModule,
+  TabType,
+  PerformanceData,
+} from '../types';
 import Treemap from './Treemap';
 import InsightsPanel from './InsightsPanel';
 import FileExplorer from './FileExplorer';
 import StatisticsPanel from './StatisticsPanel';
+import PerformancePanel from './PerformancePanel';
+import { PerformanceAnalyzer } from '../utils/performanceAnalyzer';
 
 const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
   const [selectedModule, setSelectedModule] = useState<BundleModule | null>(
     null
   );
   const [activeTab, setActiveTab] = useState<TabType>('insights');
+  const [performanceData, setPerformanceData] =
+    useState<PerformanceData | null>(null);
+
+  // Analyze performance when bundle data changes
+  useEffect(() => {
+    if (bundleData) {
+      const analyzer = new PerformanceAnalyzer(bundleData);
+      const analysis = analyzer.analyze();
+      setPerformanceData(analysis);
+    }
+  }, [bundleData]);
 
   const formatSize = (bytes: number): string => {
     if (bytes === 0) return '0 B';
@@ -110,6 +128,7 @@ const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
           <nav className='flex space-x-8'>
             {[
               { id: 'insights', label: 'Optimization Insights', icon: '💡' },
+              { id: 'performance', label: 'Performance', icon: '⚡' },
               { id: 'treemap', label: 'Treemap View', icon: '📊' },
               { id: 'files', label: 'File Explorer', icon: '📁' },
             ].map((tab) => (
@@ -153,6 +172,24 @@ const BundleAnalysis = ({ bundleData, onReset }: BundleAnalysisProps) => {
             <div className='space-y-6'>
               <StatisticsPanel bundleData={bundleData} />
               <InsightsPanel insights={bundleData.insights} />
+            </div>
+          )}
+
+          {activeTab === 'performance' && performanceData && (
+            <div>
+              <div className='mb-4'>
+                <h3 className='text-lg font-semibold text-white mb-2'>
+                  Performance Analysis
+                </h3>
+                <p className='text-gray-400 text-sm'>
+                  Detailed performance metrics, load time estimates, and
+                  optimization recommendations.
+                </p>
+              </div>
+              <PerformancePanel
+                performanceData={performanceData}
+                bundleSize={bundleData.totalSize}
+              />
             </div>
           )}
 

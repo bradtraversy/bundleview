@@ -83,4 +83,41 @@ export interface FileExplorerProps {
   onModuleSelect: (module: BundleModule) => void;
 }
 
-export type TabType = 'treemap' | 'insights' | 'files';
+export type TabType = 'insights' | 'performance' | 'treemap' | 'files';
+
+export interface PerformanceMetrics {
+  firstContentfulPaint: number;
+  largestContentfulPaint: number;
+  totalBlockingTime: number;
+  cumulativeLayoutShift: number;
+  speedIndex: number;
+  performanceScore: number;
+}
+
+export interface LoadTimeEstimate {
+  fast3G: number; // 1.6 Mbps
+  slow3G: number; // 780 Kbps
+  fast4G: number; // 9 Mbps
+  wifi: number; // 30 Mbps
+}
+
+export interface CriticalPath {
+  blockingModules: BundleModule[];
+  totalBlockingTime: number;
+  optimizationOpportunities: string[];
+}
+
+export interface PerformanceImpact {
+  beforeSize: number;
+  afterSize: number;
+  performanceChange: number;
+  recommendations: string[];
+}
+
+export interface PerformanceData {
+  metrics: PerformanceMetrics | null;
+  loadTimeEstimates: LoadTimeEstimate;
+  criticalPath: CriticalPath;
+  performanceScore: number;
+  recommendations: string[];
+}

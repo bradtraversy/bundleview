@@ -20,7 +20,6 @@ const MetricTooltip = ({
     const container = containerRef.current.getBoundingClientRect();
     const tooltip = tooltipRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
 
     let left = '50%';
     let transform = 'translateX(-50%)';

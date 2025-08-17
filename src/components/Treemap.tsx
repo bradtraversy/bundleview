@@ -150,7 +150,7 @@ const Treemap = ({ data, onModuleClick }: TreemapProps) => {
       .on('mouseout', () => {
         tooltip.transition().duration(500).style('opacity', 0);
       })
-      .on('click', (event, d) => {
+      .on('click', (_, d) => {
         console.log('Click event data:', d);
         console.log('Click event d.data:', d.data);
         if (d.data && d.data.module) {
