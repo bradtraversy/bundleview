@@ -2,7 +2,7 @@
 
 **View and optimize your JavaScript bundles with detailed insights and optimization recommendations**
 
-[![BundleView Demo](https://img.shields.io/badge/BundleView-Demo-blue?style=for-the-badge&logo=javascript)](https://github.com/bradtraversy/bundleview)
+[![Live Demo](https://img.shields.io/badge/Demo-bundleview.dev-0ea5e9?style=for-the-badge)](https://bundleview.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19+-blue?style=for-the-badge&logo=react)](https://react.dev/)
@@ -11,6 +11,12 @@
 ## 📖 Overview
 
 BundleView is a powerful, modern web application that helps developers analyze and optimize their JavaScript bundles. Whether you're working with webpack, Vite, or any other bundler, BundleView provides detailed insights into your bundle composition, identifies optimization opportunities, and offers actionable recommendations to improve performance.
+
+<p align="center">
+  <a href="https://bundleview.dev" target="_blank">
+  <img src="./public/screen.png" width="500" alt="BundleView screenshot" />
+  </a>
+</p>
 
 ## ✨ Features
 

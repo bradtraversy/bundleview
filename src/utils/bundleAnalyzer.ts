@@ -200,7 +200,7 @@ export class BundleAnalyzer {
         id: `estimated-${index}`,
         name: moduleType.name,
         size: Math.floor(totalSize * moduleType.sizeRatio),
-        path: [moduleType.name],
+        path: [filename, moduleType.name],
         dependencies: [],
         isExternal: false,
         type: moduleType.type as any,
